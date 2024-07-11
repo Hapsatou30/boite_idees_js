@@ -6,6 +6,12 @@ const form = document.getElementById('ideaForm');
 const ideasTableBody = document.getElementById('ideasTableBody');
 let idees = [];
 
+
+// Récupérer les données depuis localStorage au chargement de la page
+const ideesFromStorage = JSON.parse(localStorage.getItem('idees')) || [];
+idees = ideesFromStorage; // Mettre à jour le tableau personnes avec les données récupérées
+
+
 // Ajout d'un écouteur d'événement pour la soumission du formulaire
 form.addEventListener('submit', e => {
     e.preventDefault(); // Empêche la soumission par défaut du formulaire
@@ -35,25 +41,37 @@ const setSuccess = element => {
 
 // Fonction pour Réinitialiser les classes de succès/erreur
 const resetFormFields = () => {
+    libelle.value = '';
+    categorie.value = '';
+    description.value = '';
+
     libelle.parentElement.classList.remove('success', 'error');
     categorie.parentElement.classList.remove('success', 'error');
     description.parentElement.classList.remove('success', 'error');
     };
+
+    const regexNoDigits = /^[^\d]*$/; // Expression régulière pour vérifier l'absence de chiffres
+
 // Fonction pour valider les entrées du formulaire lors de la soumission
 const validateInputs = () => {
     let isValid = true;
 
-    // Validation du libelle
-    const valeurLibelle = libelle.value.trim();
-    if (valeurLibelle === '') {
-        setError(libelle, 'Le libelle est obligatoire'); 
-        isValid = false;
-    } else if (valeurLibelle.length <5 || valeurLibelle.length > 50) {
-        setError(libelle, 'Le libelle doit contenir entre 5 et 50 caractères'); 
-        isValid = false;
-    } else {
-        setSuccess(libelle);
-    }
+   // Validation du libelle
+const valeurLibelle = libelle.value.trim();
+
+if (valeurLibelle === '') {
+    setError(libelle, 'Le libelle est obligatoire'); 
+    isValid = false;
+} else if (valeurLibelle.length < 5 || valeurLibelle.length > 50) {
+    setError(libelle, 'Le libelle doit contenir entre 5 et 50 caractères'); 
+    isValid = false;
+} else if (!regexNoDigits.test(valeurLibelle)) {
+    setError(libelle, 'Le libelle ne doit pas contenir de chiffres'); 
+    isValid = false;
+} else {
+    setSuccess(libelle);
+}
+
 
     // Validation de la categorie
     const valeurCategorie = categorie.value.trim();
@@ -65,16 +83,20 @@ const validateInputs = () => {
     }
 
     // Validation de la description
-    const valeurDescription = description.value.trim();
-    if (valeurDescription === '') {
-        setError(description, 'La description est obligatoire'); 
-        isValid = false;
-    } else if (valeurDescription.length < 10 || valeurDescription.length > 300) {
-        setError(description, 'La description doit contenir entre 1O et 300 caractères'); 
-        isValid = false;
-    } else {
-        setSuccess(description);
-    }
+const valeurDescription = description.value.trim();
+if (valeurDescription === '') {
+    setError(description, 'La description est obligatoire'); 
+    isValid = false;
+} else if (valeurDescription.length < 10 || valeurDescription.length > 300) {
+    setError(description, 'La description doit contenir entre 10 et 300 caractères'); 
+    isValid = false;
+} else if (!regexNoDigits.test(valeurDescription)) {
+    setError(description, 'La description ne doit pas contenir de chiffres'); 
+    isValid = false;
+} else {
+    setSuccess(description);
+}
+
 
     // Si toutes les validations sont réussies, ajouter l'idée à la liste
     if (isValid) {
@@ -87,7 +109,11 @@ const validateInputs = () => {
 
         idees.push(idee); // Ajoute l'idée au tableau
         affichageIdee(); // Met à jour l'affichage de la liste des idées
-        form.reset(); // Réinitialise le formulaire
+        resetFormFields(); // Réinitialise le formulaire
+
+        // Sauvegarder dans localStorage
+        localStorage.setItem('idees', JSON.stringify(idees));
+ 
     }
 };
 
@@ -109,43 +135,24 @@ const affichageIdee = () => {
         cellCategorie.textContent = idee.categorie;
         cellDescription.textContent = idee.description;
 
-        // // Création des boutons d'actions
-        // const approveButton = document.createElement('button');
-        // approveButton.classList.add('btn', 'btn-success', 'btn-sm');
-        // approveButton.textContent = 'Approuver';
-        // approveButton.addEventListener('click', () => approveIdea(index));
 
-        // const disapproveButton = document.createElement('button');
-        // disapproveButton.classList.add('btn', 'btn-warning', 'btn-sm');
-        // disapproveButton.textContent = 'Désapprouver';
-        // disapproveButton.addEventListener('click', () => disapproveIdea(index));
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm');
+        deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        deleteButton.addEventListener('click', () => deleteIdea(index));
 
-        // const deleteButton = document.createElement('button');
-        // deleteButton.classList.add('btn', 'btn-danger', 'btn-sm');
-        // deleteButton.textContent = 'Supprimer';
-        // deleteButton.addEventListener('click', () => deleteIdea(index));
+        cellActions.appendChild(deleteButton);
 
-        // // Ajout des boutons à la cellule d'actions
-        // cellActions.appendChild(approveButton);
-        // cellActions.appendChild(disapproveButton);
-        // cellActions.appendChild(deleteButton);
+        
     });
+    // Convertir le tableau idées en JSON pour le stockage ou l'envoi
+    const ideesJSON = JSON.stringify(idees);
+};
+// Fonction pour supprimer une idée
+const deleteIdea = index => {
+    idees.splice(index, 1);
+    affichageIdee();
+    localStorage.setItem('idees', JSON.stringify(idees));
 };
 
-// // Fonction pour approuver une idée
-// const approveIdea = index => {
-//     idees[index].status = 'Approuvée';
-//     affichageIdee();
-// };
-
-// // Fonction pour désapprouver une idée
-// const disapproveIdea = index => {
-//     idees[index].status = 'Non Approuvée';
-//     affichageIdee();
-// };
-
-// // Fonction pour supprimer une idée
-// const deleteIdea = index => {
-//     idees.splice(index, 1);
-//     affichageIdee();
-//};
+affichageIdee();
