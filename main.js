@@ -5,6 +5,9 @@ const description = document.getElementById('message');
 const form = document.getElementById('ideaForm');
 const ideasTableBody = document.getElementById('ideasTableBody');
 let idees = [];
+// Expressions régulières pour vérifier l'absence de chiffres et de balises HTML
+const regexNoDigits = /^[^\d]*$/; 
+const regexNoHTML = /<\/?[^>]+(>|$)/g; 
 
 // Liste des catégories valides
 const validCategories = ["politique", "sport", "sante", "education", "autre"];
@@ -50,9 +53,6 @@ const resetFormFields = () => {
     description.parentElement.classList.remove('success', 'error');
 };
 
-// Expressions régulières pour vérifier l'absence de chiffres et de balises HTML
-const regexNoDigits = /^[^\d]*$/; 
-const regexNoHTML = /<\/?[^>]+(>|$)/g; 
 
 // Fonction pour afficher un message pendant une durée spécifiée
 const displayMessage = (message, isSuccess) => {
@@ -135,12 +135,13 @@ const validateInputs = () => {
 
     // Si nous éditons une idée existante, mettre à jour cette idée
     if (editIndex !== null) {
-        idees[editIndex] = idee;
-        editIndex = null;
-        form.querySelector('button[type="submit"]').textContent = 'Soumettre';
+        idees[editIndex] = idee; // Met à jour l'idée existante dans le tableau idees à l'index editIndex
+        editIndex = null; // Réinitialise l'index d'édition pour indiquer que l'édition est terminée
+        form.querySelector('button[type="submit"]').textContent = 'Soumettre'; // Rétablit le texte du bouton de soumission
     } else {
-        idees.push(idee); // Ajoute l'idée au tableau
+        idees.push(idee); // Ajoute l'idée au tableau idees s'il s'agit d'une nouvelle idée
     }
+
 
     affichageIdee(); // Met à jour l'affichage de la liste des idées
     resetFormFields(); // Réinitialise le formulaire
